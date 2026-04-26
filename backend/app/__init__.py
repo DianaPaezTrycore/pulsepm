@@ -16,6 +16,9 @@ def create_app(config_object=None):
         app.config.from_object(Config)
 
     db.init_app(app)
+
+    from app import models  # noqa: F401
+
     CORS(app)
     Swagger(app, template={
         "info": {"title": "PulsePM API", "version": "1.0.0"},
