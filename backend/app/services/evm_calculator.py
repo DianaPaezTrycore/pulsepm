@@ -16,3 +16,17 @@ def calculate_cost_variance(ev: float, ac: float) -> float:
 def calculate_schedule_variance(ev: float, pv: float) -> float:
     """SV = EV - PV"""
     return ev - pv
+
+
+def calculate_cpi(ev: float, ac: float) -> float | None:
+    """CPI = EV / AC. Retorna None si AC == 0"""
+    if ac == 0:
+        return None
+    return ev / ac
+
+
+def calculate_spi(ev: float, pv: float) -> float | None:
+    """SPI = EV / PV. Retorna None si PV == 0"""
+    if pv == 0:
+        return None
+    return ev / pv
