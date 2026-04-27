@@ -25,3 +25,11 @@ def create_project():
         }), 422
     project = project_service.create_project(data)
     return jsonify(project), 201
+
+
+@projects_bp.route("/projects/<int:project_id>", methods=["GET"])
+def get_project(project_id):
+    project = project_service.get_project_detail(project_id)
+    if project is None:
+        return jsonify({"error": "Project not found", "code": 404}), 404
+    return jsonify(project), 200
