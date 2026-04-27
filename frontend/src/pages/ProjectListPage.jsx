@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { api } from '../services/api'
 
 
-function ProjectCard({ project }) {
+function ProjectCard({ project, onDelete }) {
   return (
     <article className="bg-white rounded-lg shadow-sm border border-ink-200 p-5 flex flex-col gap-3 hover:shadow-md transition-shadow">
       <h3 className="text-lg font-semibold text-ink-900">{project.name}</h3>
@@ -18,6 +18,12 @@ function ProjectCard({ project }) {
         >
           Ver detalle
         </Link>
+        <button
+          onClick={() => onDelete(project)}
+          className="text-red-600 border border-red-200 px-4 py-2 rounded text-sm hover:bg-red-50 transition-colors"
+        >
+          Eliminar
+        </button>
       </div>
     </article>
   )
@@ -145,6 +151,19 @@ export default function ProjectListPage() {
     loadProjects()
   }
 
+  async function handleDelete(project) {
+    const confirmed = window.confirm(
+      `¿Eliminar "${project.name}"? Esta acción borrará también sus actividades.`
+    )
+    if (!confirmed) return
+    try {
+      await api.delete(`/projects/${project.id}`)
+      loadProjects()
+    } catch (err) {
+      setError(err.message)
+    }
+  }
+
   if (loading) {
     return (
       <main className="max-w-7xl mx-auto p-6 text-ink-500">
@@ -187,7 +206,7 @@ export default function ProjectListPage() {
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} />
+            <ProjectCard key={p.id} project={p} onDelete={handleDelete} />
           ))}
         </div>
       )}
