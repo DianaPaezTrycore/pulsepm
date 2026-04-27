@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_cors import CORS
 from flasgger import Swagger
@@ -24,5 +24,12 @@ def create_app(config_object=None):
         "info": {"title": "PulsePM API", "version": "1.0.0"},
         "basePath": "/api/v1"
     })
+
+    from app.controllers.project_controller import projects_bp
+    app.register_blueprint(projects_bp, url_prefix="/api/v1")
+
+    @app.errorhandler(500)
+    def handle_internal_error(error):
+        return jsonify({"error": "Internal server error", "code": 500}), 500
 
     return app
