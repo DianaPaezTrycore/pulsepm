@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
 import ProjectListPage from './pages/ProjectListPage.jsx'
+import ProjectDetailPage from './pages/ProjectDetailPage.jsx'
 
 function Header() {
   return (
@@ -13,21 +14,13 @@ function Header() {
   )
 }
 
-function DetailPlaceholder() {
-  return (
-    <main className="max-w-7xl mx-auto p-6">
-      <h2 className="text-xl text-ink-700">Project detail (coming soon)</h2>
-    </main>
-  )
-}
-
 export default function App() {
   return (
     <BrowserRouter>
       <Header />
       <Routes>
         <Route path="/" element={<ProjectListPage />} />
-        <Route path="/projects/:id" element={<DetailPlaceholder />} />
+        <Route path="/projects/:id" element={<ProjectDetailPage />} />
       </Routes>
     </BrowserRouter>
   )
