@@ -26,6 +26,25 @@ def create_project(data):
     return _serialize_project_summary(project)
 
 
+def update_project(project_id, data):
+    project = Project.query.get(project_id)
+    if project is None:
+        return None
+    project.name = data["name"]
+    project.description = data.get("description")
+    db.session.commit()
+    return _serialize_project_summary(project)
+
+
+def delete_project(project_id):
+    project = Project.query.get(project_id)
+    if project is None:
+        return False
+    db.session.delete(project)
+    db.session.commit()
+    return True
+
+
 def _serialize_project_summary(project):
     return {
         "id": project.id,
