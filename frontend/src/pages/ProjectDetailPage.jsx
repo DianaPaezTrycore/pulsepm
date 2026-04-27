@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 
 import { api } from '../services/api'
 import ProjectSummary from '../components/ProjectSummary.jsx'
+import ActivityTable from '../components/ActivityTable.jsx'
 
 
 function ProjectHeader({ project, onSaveName }) {
@@ -144,6 +145,14 @@ export default function ProjectDetailPage() {
       </div>
 
       <ProjectSummary indicators={project.project_indicators} />
+
+      <section>
+        <h3 className="text-xl font-bold text-ink-900 mb-3">Actividades</h3>
+        <ActivityTable
+          activities={project.activities}
+          totals={project.project_indicators}
+        />
+      </section>
     </main>
   )
 }
