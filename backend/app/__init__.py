@@ -25,4 +25,7 @@ def create_app(config_object=None):
         "basePath": "/api/v1"
     })
 
+    from app.controllers.project_controller import projects_bp
+    app.register_blueprint(projects_bp, url_prefix="/api/v1")
+
     return app
