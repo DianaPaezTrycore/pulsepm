@@ -24,10 +24,103 @@ function ProjectCard({ project }) {
 }
 
 
+function NewProjectModal({ onClose, onSubmit }) {
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function handleSubmit(event) {
+    event.preventDefault()
+    setSubmitting(true)
+    setError(null)
+    try {
+      await onSubmit({
+        name: name.trim(),
+        description: description.trim() || null,
+      })
+    } catch (err) {
+      setError(err.message)
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div
+      className="fixed inset-0 bg-black/40 flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <div
+        className="bg-white rounded-lg p-6 w-full max-w-md shadow-xl"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-xl font-bold text-ink-900">Nuevo proyecto</h2>
+          <button
+            onClick={onClose}
+            className="text-ink-500 hover:text-ink-900 text-xl leading-none"
+            aria-label="Cerrar"
+          >
+            ✕
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-ink-700 mb-1">
+              Nombre <span className="text-red-600">*</span>
+            </label>
+            <input
+              type="text"
+              required
+              maxLength={255}
+              value={name}
+              onChange={(event) => setName(event.target.value)}
+              className="w-full border border-ink-300 rounded px-3 py-2 focus:ring-2 focus:ring-pulse-500 focus:border-pulse-500 focus:outline-none"
+              autoFocus
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-ink-700 mb-1">
+              Descripción
+            </label>
+            <textarea
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              rows={3}
+              className="w-full border border-ink-300 rounded px-3 py-2 focus:ring-2 focus:ring-pulse-500 focus:border-pulse-500 focus:outline-none"
+            />
+          </div>
+          {error && (
+            <p className="text-red-600 text-sm">{error}</p>
+          )}
+          <div className="flex justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-ink-700 border border-ink-300 rounded hover:bg-ink-100"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={submitting || !name.trim()}
+              className="px-4 py-2 bg-pulse-500 text-white rounded hover:bg-pulse-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {submitting ? 'Creando...' : 'Crear'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  )
+}
+
+
 export default function ProjectListPage() {
   const [projects, setProjects] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [showModal, setShowModal] = useState(false)
 
   async function loadProjects() {
     try {
@@ -45,6 +138,12 @@ export default function ProjectListPage() {
   useEffect(() => {
     loadProjects()
   }, [])
+
+  async function handleCreate(payload) {
+    await api.post('/projects', payload)
+    setShowModal(false)
+    loadProjects()
+  }
 
   if (loading) {
     return (
@@ -72,6 +171,12 @@ export default function ProjectListPage() {
     <main className="max-w-7xl mx-auto p-6">
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-2xl font-bold text-ink-900">Proyectos</h2>
+        <button
+          onClick={() => setShowModal(true)}
+          className="bg-pulse-500 text-white px-4 py-2 rounded font-medium hover:bg-pulse-600"
+        >
+          + Nuevo proyecto
+        </button>
       </div>
 
       {projects.length === 0 ? (
@@ -85,6 +190,13 @@ export default function ProjectListPage() {
             <ProjectCard key={p.id} project={p} />
           ))}
         </div>
+      )}
+
+      {showModal && (
+        <NewProjectModal
+          onClose={() => setShowModal(false)}
+          onSubmit={handleCreate}
+        />
       )}
     </main>
   )
