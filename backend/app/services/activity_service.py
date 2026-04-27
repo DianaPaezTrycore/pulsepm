@@ -1,0 +1,32 @@
+from app import db
+from app.models.activity import Activity
+from app.models.project import Project
+
+
+def create_activity(project_id, data):
+    project = Project.query.get(project_id)
+    if project is None:
+        return None
+    activity = Activity(
+        project_id=project_id,
+        name=data["name"],
+        bac=data["bac"],
+        planned_progress=data["planned_progress"],
+        actual_progress=data["actual_progress"],
+        actual_cost=data["actual_cost"],
+    )
+    db.session.add(activity)
+    db.session.commit()
+    return _serialize_activity(activity)
+
+
+def _serialize_activity(activity):
+    return {
+        "id": activity.id,
+        "project_id": activity.project_id,
+        "name": activity.name,
+        "bac": float(activity.bac),
+        "planned_progress": float(activity.planned_progress),
+        "actual_progress": float(activity.actual_progress),
+        "actual_cost": float(activity.actual_cost),
+    }
