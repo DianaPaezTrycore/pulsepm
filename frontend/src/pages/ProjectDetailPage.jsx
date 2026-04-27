@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
 import { api } from '../services/api'
+import ProjectSummary from '../components/ProjectSummary.jsx'
 
 
 function ProjectHeader({ project, onSaveName }) {
@@ -141,6 +142,8 @@ export default function ProjectDetailPage() {
           <p className="text-ink-500 mt-2">{project.description}</p>
         )}
       </div>
+
+      <ProjectSummary indicators={project.project_indicators} />
     </main>
   )
 }
