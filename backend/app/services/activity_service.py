@@ -20,6 +20,32 @@ def create_activity(project_id, data):
     return _serialize_activity(activity)
 
 
+def update_activity(project_id, activity_id, data):
+    activity = Activity.query.filter_by(
+        id=activity_id, project_id=project_id
+    ).first()
+    if activity is None:
+        return None
+    activity.name = data["name"]
+    activity.bac = data["bac"]
+    activity.planned_progress = data["planned_progress"]
+    activity.actual_progress = data["actual_progress"]
+    activity.actual_cost = data["actual_cost"]
+    db.session.commit()
+    return _serialize_activity(activity)
+
+
+def delete_activity(project_id, activity_id):
+    activity = Activity.query.filter_by(
+        id=activity_id, project_id=project_id
+    ).first()
+    if activity is None:
+        return False
+    db.session.delete(activity)
+    db.session.commit()
+    return True
+
+
 def _serialize_activity(activity):
     return {
         "id": activity.id,
