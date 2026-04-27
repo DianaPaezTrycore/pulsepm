@@ -80,6 +80,8 @@ export default function ProjectDetailPage() {
   const [project, setProject] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [editingId, setEditingId] = useState(null)
+  const [addingNew, setAddingNew] = useState(false)
 
   async function loadProject() {
     try {
@@ -104,6 +106,31 @@ export default function ProjectDetailPage() {
       description: project.description,
     })
     await loadProject()
+  }
+
+  async function handleAddActivity(data) {
+    await api.post(`/projects/${id}/activities`, data)
+    setAddingNew(false)
+    await loadProject()
+  }
+
+  async function handleEditActivity(activityId, data) {
+    await api.put(`/projects/${id}/activities/${activityId}`, data)
+    setEditingId(null)
+    await loadProject()
+  }
+
+  async function handleDeleteActivity(activity) {
+    const confirmed = window.confirm(
+      `¿Eliminar la actividad "${activity.name}"?`
+    )
+    if (!confirmed) return
+    try {
+      await api.delete(`/projects/${id}/activities/${activity.id}`)
+      await loadProject()
+    } catch (err) {
+      setError(err.message)
+    }
   }
 
   if (loading) {
@@ -147,10 +174,28 @@ export default function ProjectDetailPage() {
       <ProjectSummary indicators={project.project_indicators} />
 
       <section>
-        <h3 className="text-xl font-bold text-ink-900 mb-3">Actividades</h3>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xl font-bold text-ink-900">Actividades</h3>
+          {!addingNew && editingId === null && (
+            <button
+              onClick={() => setAddingNew(true)}
+              className="bg-pulse-500 text-white px-4 py-2 rounded font-medium hover:bg-pulse-600"
+            >
+              + Agregar actividad
+            </button>
+          )}
+        </div>
         <ActivityTable
           activities={project.activities}
           totals={project.project_indicators}
+          editingId={editingId}
+          addingNew={addingNew}
+          onEdit={setEditingId}
+          onDelete={handleDeleteActivity}
+          onSaveEdit={handleEditActivity}
+          onCancelEdit={() => setEditingId(null)}
+          onSaveAdd={handleAddActivity}
+          onCancelAdd={() => setAddingNew(false)}
         />
       </section>
     </main>

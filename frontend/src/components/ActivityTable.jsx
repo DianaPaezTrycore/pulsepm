@@ -1,3 +1,6 @@
+import ActivityForm from './ActivityForm.jsx'
+
+
 const numFmt = (value) => {
   if (value === null || value === undefined) return '—'
   return Number(value).toLocaleString('es-CO', {
@@ -25,10 +28,24 @@ const COLUMNS = [
   { key: 'sv', label: 'SV', align: 'right' },
   { key: 'cpi', label: 'CPI', align: 'right' },
   { key: 'spi', label: 'SPI', align: 'right' },
+  { key: 'actions', label: 'Acciones', align: 'right' },
 ]
 
 
-export default function ActivityTable({ activities, totals }) {
+export default function ActivityTable({
+  activities,
+  totals,
+  editingId,
+  addingNew,
+  onEdit,
+  onDelete,
+  onSaveEdit,
+  onCancelEdit,
+  onSaveAdd,
+  onCancelAdd,
+}) {
+  const isEmpty = activities.length === 0 && !addingNew
+
   return (
     <div className="overflow-x-auto bg-white rounded-lg border border-ink-200 shadow-sm">
       <table className="w-full text-sm">
@@ -45,7 +62,7 @@ export default function ActivityTable({ activities, totals }) {
           </tr>
         </thead>
         <tbody>
-          {activities.length === 0 ? (
+          {isEmpty && (
             <tr>
               <td
                 colSpan={COLUMNS.length}
@@ -54,8 +71,16 @@ export default function ActivityTable({ activities, totals }) {
                 Sin actividades. Agrega la primera para empezar a calcular EVM.
               </td>
             </tr>
-          ) : (
-            activities.map((activity) => (
+          )}
+          {activities.map((activity) =>
+            editingId === activity.id ? (
+              <ActivityForm
+                key={activity.id}
+                initialValues={activity}
+                onSubmit={(data) => onSaveEdit(activity.id, data)}
+                onCancel={onCancelEdit}
+              />
+            ) : (
               <tr key={activity.id} className="border-t border-ink-100 hover:bg-ink-50">
                 <td className="px-3 py-2">{activity.name}</td>
                 <td className="px-3 py-2 text-right">{numFmt(activity.bac)}</td>
@@ -68,8 +93,28 @@ export default function ActivityTable({ activities, totals }) {
                 <td className="px-3 py-2 text-right">{numFmt(activity.indicators.sv)}</td>
                 <td className="px-3 py-2 text-right">{ratioFmt(activity.indicators.cpi)}</td>
                 <td className="px-3 py-2 text-right">{ratioFmt(activity.indicators.spi)}</td>
+                <td className="px-3 py-2 text-right whitespace-nowrap">
+                  <button
+                    onClick={() => onEdit(activity.id)}
+                    className="text-pulse-600 hover:underline mr-2"
+                  >
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => onDelete(activity)}
+                    className="text-red-600 hover:underline"
+                  >
+                    Eliminar
+                  </button>
+                </td>
               </tr>
-            ))
+            )
+          )}
+          {addingNew && (
+            <ActivityForm
+              onSubmit={onSaveAdd}
+              onCancel={onCancelAdd}
+            />
           )}
         </tbody>
         {activities.length > 0 && (
@@ -86,6 +131,7 @@ export default function ActivityTable({ activities, totals }) {
               <td className="px-3 py-2 text-right">{numFmt(totals.sv)}</td>
               <td className="px-3 py-2 text-right">{ratioFmt(totals.cpi)}</td>
               <td className="px-3 py-2 text-right">{ratioFmt(totals.spi)}</td>
+              <td></td>
             </tr>
           </tfoot>
         )}
