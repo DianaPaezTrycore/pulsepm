@@ -26,7 +26,9 @@ def create_app(config_object=None):
     })
 
     from app.controllers.project_controller import projects_bp
+    from app.controllers.activity_controller import activities_bp
     app.register_blueprint(projects_bp, url_prefix="/api/v1")
+    app.register_blueprint(activities_bp, url_prefix="/api/v1")
 
     @app.errorhandler(500)
     def handle_internal_error(error):
