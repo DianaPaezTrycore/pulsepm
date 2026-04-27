@@ -4,6 +4,7 @@ import { Link, useParams } from 'react-router-dom'
 import { api } from '../services/api'
 import ProjectSummary from '../components/ProjectSummary.jsx'
 import ActivityTable from '../components/ActivityTable.jsx'
+import EVMChart from '../components/EVMChart.jsx'
 
 
 function ProjectHeader({ project, onSaveName }) {
@@ -172,6 +173,11 @@ export default function ProjectDetailPage() {
       </div>
 
       <ProjectSummary indicators={project.project_indicators} />
+
+      <section>
+        <h3 className="text-xl font-bold text-ink-900 mb-3">Gráfico EVM</h3>
+        <EVMChart activities={project.activities} />
+      </section>
 
       <section>
         <div className="flex items-center justify-between mb-3">
