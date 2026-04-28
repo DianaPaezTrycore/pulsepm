@@ -123,7 +123,6 @@ pulsepm/
 ├── docker-compose.yml
 ├── .gitignore
 ├── README.md
-├── AI_PROCESS.md
 └── SPEC_EVM_Trycore_v2.md
 ```
 

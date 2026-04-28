@@ -8,7 +8,6 @@ de **Earned Value Management (EVM)** por actividad y consolidados por proyecto.
 - **Infraestructura**: Docker Compose (3 servicios: db, backend, frontend).
 
 Para la especificación completa ver [`SPEC_EVM_Trycore_v2.md`](SPEC_EVM_Trycore_v2.md).
-Para el flujo de IA usado durante el desarrollo ver [`AI_PROCESS.md`](AI_PROCESS.md).
 
 ---
 
@@ -196,7 +195,6 @@ pulsepm/
 ├── frontend/        React app (Vite, Tailwind via CDN, Recharts)
 ├── docker-compose.yml
 ├── README.md        (este archivo)
-├── AI_PROCESS.md    Cómo se usó IA durante el desarrollo
 └── SPEC_EVM_Trycore_v2.md   Especificación funcional y técnica
 ```
 
