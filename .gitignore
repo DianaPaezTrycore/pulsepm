@@ -45,3 +45,9 @@ Thumbs.db
 
 # Claude Code
 .claude/
+
+# Docker compose local override
+docker-compose.override.yml
+
+# Local test output
+test_output.txt
