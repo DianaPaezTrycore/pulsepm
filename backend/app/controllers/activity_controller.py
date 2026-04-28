@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
+from app.responses import not_found_response, validation_error_response
 from app.schemas.activity_schema import ActivitySchema
 from app.services import activity_service
 
@@ -42,14 +43,10 @@ def create_activity(project_id):
     try:
         data = activity_schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify({
-            "error": "Validation error",
-            "details": err.messages,
-            "code": 422,
-        }), 422
+        return validation_error_response(err.messages)
     activity = activity_service.create_activity(project_id, data)
     if activity is None:
-        return jsonify({"error": "Project not found", "code": 404}), 404
+        return not_found_response("Project")
     return jsonify(activity), 201
 
 
@@ -94,14 +91,10 @@ def update_activity(project_id, activity_id):
     try:
         data = activity_schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify({
-            "error": "Validation error",
-            "details": err.messages,
-            "code": 422,
-        }), 422
+        return validation_error_response(err.messages)
     activity = activity_service.update_activity(project_id, activity_id, data)
     if activity is None:
-        return jsonify({"error": "Activity not found", "code": 404}), 404
+        return not_found_response("Activity")
     return jsonify(activity), 200
 
 
@@ -134,5 +127,5 @@ def delete_activity(project_id, activity_id):
     """
     deleted = activity_service.delete_activity(project_id, activity_id)
     if not deleted:
-        return jsonify({"error": "Activity not found", "code": 404}), 404
+        return not_found_response("Activity")
     return "", 204
