@@ -64,11 +64,14 @@ def _activity_to_dict(activity):
 
 def _serialize_activity(activity):
     activity_dict = _activity_to_dict(activity)
+    indicators = calculate_activity_indicators(activity_dict)
+    indicators["cpi_interpretation"] = interpret_cpi(indicators["cpi"])
+    indicators["spi_interpretation"] = interpret_spi(indicators["spi"])
     return {
         "id": activity.id,
         "name": activity.name,
         **activity_dict,
-        "indicators": calculate_activity_indicators(activity_dict),
+        "indicators": indicators,
     }
 
 
