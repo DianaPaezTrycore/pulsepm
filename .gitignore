@@ -54,3 +54,6 @@ test_output.txt
 
 # Local chat history
 historial_chat.txt
+
+# AI process notes (local only)
+AI_PROCESS.md
