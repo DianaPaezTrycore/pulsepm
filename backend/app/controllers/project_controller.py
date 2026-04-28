@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from marshmallow import ValidationError
 
+from app.responses import not_found_response, validation_error_response
 from app.schemas.project_schema import ProjectSchema
 from app.services import project_service
 
@@ -52,11 +53,7 @@ def create_project():
     try:
         data = project_schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify({
-            "error": "Validation error",
-            "details": err.messages,
-            "code": 422,
-        }), 422
+        return validation_error_response(err.messages)
     project = project_service.create_project(data)
     return jsonify(project), 201
 
@@ -85,7 +82,7 @@ def get_project(project_id):
     """
     project = project_service.get_project_detail(project_id)
     if project is None:
-        return jsonify({"error": "Project not found", "code": 404}), 404
+        return not_found_response("Project")
     return jsonify(project), 200
 
 
@@ -123,14 +120,10 @@ def update_project(project_id):
     try:
         data = project_schema.load(request.get_json() or {})
     except ValidationError as err:
-        return jsonify({
-            "error": "Validation error",
-            "details": err.messages,
-            "code": 422,
-        }), 422
+        return validation_error_response(err.messages)
     project = project_service.update_project(project_id, data)
     if project is None:
-        return jsonify({"error": "Project not found", "code": 404}), 404
+        return not_found_response("Project")
     return jsonify(project), 200
 
 
@@ -156,5 +149,5 @@ def delete_project(project_id):
     """
     deleted = project_service.delete_project(project_id)
     if not deleted:
-        return jsonify({"error": "Project not found", "code": 404}), 404
+        return not_found_response("Project")
     return "", 204

@@ -4,7 +4,7 @@ from app.models.project import Project
 
 
 def create_activity(project_id, data):
-    project = Project.query.get(project_id)
+    project = db.session.get(Project, project_id)
     if project is None:
         return None
     activity = Activity(

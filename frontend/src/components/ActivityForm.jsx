@@ -1,8 +1,4 @@
-import { useState } from 'react'
-
-
-const COLSPAN_TOTAL = 12
-
+import React, { useState } from 'react'
 
 function fieldValue(initial, key) {
   if (initial && initial[key] !== undefined && initial[key] !== null) {
@@ -10,7 +6,6 @@ function fieldValue(initial, key) {
   }
   return ''
 }
-
 
 export default function ActivityForm({ initialValues, onSubmit, onCancel }) {
   const [name, setName] = useState(initialValues?.name ?? '')
@@ -38,96 +33,102 @@ export default function ActivityForm({ initialValues, onSubmit, onCancel }) {
     }
   }
 
-  const inputClass = 'w-full border border-ink-300 rounded px-2 py-1 focus:ring-2 focus:ring-pulse-500 focus:border-pulse-500 focus:outline-none'
+  const inputCls = 'w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-400 focus:border-blue-500 focus:outline-none bg-white hover:border-slate-300 transition-colors'
+  const labelCls = 'block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5'
+  const isEditing = Boolean(initialValues)
 
   return (
-    <>
-      <tr className="bg-pulse-50 border-t border-pulse-200">
-        <td className="px-2 py-1">
-          <input
-            value={name}
-            onChange={(event) => setName(event.target.value)}
-            className={inputClass}
-            required
-            maxLength={255}
-            placeholder="Nombre"
-            autoFocus
-          />
-        </td>
-        <td className="px-2 py-1">
-          <input
-            type="number"
-            min="0.01"
-            step="0.01"
-            value={bac}
-            onChange={(event) => setBac(event.target.value)}
-            className={`${inputClass} text-right`}
-            required
-          />
-        </td>
-        <td className="px-2 py-1">
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={planned}
-            onChange={(event) => setPlanned(event.target.value)}
-            className={`${inputClass} text-right`}
-            required
-          />
-        </td>
-        <td className="px-2 py-1">
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.01"
-            value={actual}
-            onChange={(event) => setActual(event.target.value)}
-            className={`${inputClass} text-right`}
-            required
-          />
-        </td>
-        <td className="px-2 py-1">
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={actualCost}
-            onChange={(event) => setActualCost(event.target.value)}
-            className={`${inputClass} text-right`}
-            required
-          />
-        </td>
-        <td colSpan={6} className="px-3 py-2 text-xs text-ink-500 italic">
-          Los indicadores se recalculan al guardar
-        </td>
-        <td className="px-3 py-2 text-right whitespace-nowrap">
-          <button
-            type="button"
-            onClick={handleSave}
-            disabled={submitting || !name.trim()}
-            className="text-pulse-600 hover:underline mr-2 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Guardando...' : 'Guardar'}
-          </button>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="text-ink-500 hover:underline"
-          >
-            Cancelar
-          </button>
-        </td>
-      </tr>
-      {error && (
-        <tr className="bg-red-50">
-          <td colSpan={COLSPAN_TOTAL} className="px-3 py-2 text-sm text-red-700">
-            {error}
-          </td>
-        </tr>
-      )}
-    </>
+    <div className={`border-l-4 ${isEditing ? 'border-l-amber-400 bg-amber-50/30' : 'border-l-blue-500 bg-blue-50/30'} border-b border-slate-100`}>
+      <div className="p-5">
+        <p className={`text-xs font-bold mb-4 ${isEditing ? 'text-amber-700' : 'text-blue-700'}`}>
+          {isEditing ? 'Editar actividad' : 'Nueva actividad'}
+        </p>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          <div className="col-span-2">
+            <label className={labelCls}>Nombre *</label>
+            <input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              className={inputCls}
+              placeholder="Nombre de la actividad"
+              maxLength={255}
+              autoFocus
+              required
+            />
+          </div>
+          <div>
+            <label className={labelCls}>BAC</label>
+            <input
+              type="number" min="0.01" step="0.01"
+              value={bac}
+              onChange={(e) => setBac(e.target.value)}
+              className={`${inputCls} text-right`}
+              placeholder="0.00"
+              required
+            />
+          </div>
+          <div>
+            <label className={labelCls}>% Planeado</label>
+            <input
+              type="number" min="0" max="100" step="0.01"
+              value={planned}
+              onChange={(e) => setPlanned(e.target.value)}
+              className={`${inputCls} text-right`}
+              placeholder="0"
+              required
+            />
+          </div>
+          <div>
+            <label className={labelCls}>% Real</label>
+            <input
+              type="number" min="0" max="100" step="0.01"
+              value={actual}
+              onChange={(e) => setActual(e.target.value)}
+              className={`${inputCls} text-right`}
+              placeholder="0"
+              required
+            />
+          </div>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mt-3">
+          <div>
+            <label className={labelCls}>Costo Real (AC)</label>
+            <input
+              type="number" min="0" step="0.01"
+              value={actualCost}
+              onChange={(e) => setActualCost(e.target.value)}
+              className={`${inputCls} text-right`}
+              placeholder="0.00"
+              required
+            />
+          </div>
+          <div className="hidden sm:flex col-span-3 items-end pb-1">
+            <p className="text-xs text-slate-400 italic">Los indicadores EVM se recalculan automáticamente al guardar.</p>
+          </div>
+          <div className="flex items-end justify-end gap-2">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="px-4 py-2 text-sm text-slate-600 border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors font-medium"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleSave}
+              disabled={submitting || !name.trim()}
+              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-semibold shadow-sm"
+            >
+              {submitting ? 'Guardando...' : 'Guardar'}
+            </button>
+          </div>
+        </div>
+        {error && (
+          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
+            <p className="text-red-600 text-sm">{error}</p>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }

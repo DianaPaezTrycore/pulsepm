@@ -10,7 +10,7 @@ def app():
     with application.app_context():
         _db.create_all()
         yield application
-        _db.drop_all()
+        _db.session.remove()
 
 
 @pytest.fixture()

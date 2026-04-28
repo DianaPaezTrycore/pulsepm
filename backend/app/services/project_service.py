@@ -13,7 +13,7 @@ def list_projects():
 
 
 def get_project_detail(project_id):
-    project = Project.query.get(project_id)
+    project = db.session.get(Project, project_id)
     if project is None:
         return None
     return _serialize_project_detail(project)
@@ -27,7 +27,7 @@ def create_project(data):
 
 
 def update_project(project_id, data):
-    project = Project.query.get(project_id)
+    project = db.session.get(Project, project_id)
     if project is None:
         return None
     project.name = data["name"]
@@ -37,7 +37,7 @@ def update_project(project_id, data):
 
 
 def delete_project(project_id):
-    project = Project.query.get(project_id)
+    project = db.session.get(Project, project_id)
     if project is None:
         return False
     db.session.delete(project)
