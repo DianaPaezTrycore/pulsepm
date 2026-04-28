@@ -54,6 +54,7 @@ pulsepm/
 │   │   ├── __init__.py
 │   │   ├── config.py
 │   │   ├── constants.py
+│   │   ├── responses.py            ← helpers compartidos: validation_error, not_found
 │   │   ├── models/
 │   │   │   ├── __init__.py
 │   │   │   ├── project.py
@@ -77,23 +78,29 @@ pulsepm/
 │   │   ├── conftest.py
 │   │   ├── unit/
 │   │   │   ├── __init__.py
-│   │   │   └── test_evm_calculator.py
+│   │   │   ├── test_evm_calculator.py
+│   │   │   └── test_evm_interpreter.py
 │   │   └── integration/
 │   │       ├── __init__.py
+│   │       ├── conftest.py         ← fixture autouse para aislar tests
 │   │       ├── test_projects_api.py
 │   │       └── test_activities_api.py
 │   ├── migrations/
 │   │   └── init.sql
 │   ├── requirements.txt
+│   ├── pytest.ini
 │   ├── .flake8
+│   ├── Dockerfile
+│   ├── .dockerignore
 │   └── run.py
 ├── frontend/
 │   ├── public/
-│   │   └── hedgehog.svg          ← logo erizo (SVG inline)
+│   │   └── logo.svg                ← logo SVG estilizado (browser/escudo)
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── ActivityForm.jsx
 │   │   │   ├── ActivityTable.jsx
+│   │   │   ├── ConfirmModal.jsx
 │   │   │   ├── EVMChart.jsx
 │   │   │   ├── ProjectSummary.jsx
 │   │   │   └── StatusBadge.jsx
@@ -103,15 +110,21 @@ pulsepm/
 │   │   ├── services/
 │   │   │   └── api.js
 │   │   ├── App.jsx
-│   │   └── main.jsx
+│   │   ├── main.jsx
+│   │   └── index.css
 │   ├── index.html
 │   ├── package.json
+│   ├── package-lock.json
 │   ├── tailwind.config.js
 │   ├── postcss.config.js
-│   └── vite.config.js
+│   ├── vite.config.js
+│   ├── Dockerfile
+│   └── .dockerignore
 ├── docker-compose.yml
+├── .gitignore
 ├── README.md
-└── AI_PROCESS.md
+├── AI_PROCESS.md
+└── SPEC_EVM_Trycore_v2.md
 ```
 
 ---
@@ -509,18 +522,47 @@ def test_project_consolidated_with_multiple_activities()
 ### `tests/integration/` — un test por endpoint mínimo
 
 ```python
+# Projects API
+def test_list_projects_returns_empty_list()
+def test_list_projects_returns_created_projects()
 def test_create_project_returns_201()
+def test_create_project_returns_422_for_empty_name()
 def test_get_project_returns_evm_indicators()
 def test_get_nonexistent_project_returns_404()
+def test_update_project_returns_200()
+def test_update_project_returns_404()
+def test_update_project_returns_422_for_empty_name()
 def test_delete_project_cascades_activities()
+def test_delete_nonexistent_project_returns_404()
+
+# Activities API
 def test_create_activity_with_negative_bac_returns_422()
+def test_create_activity_for_nonexistent_project_returns_404()
+def test_update_activity_returns_200()
+def test_update_activity_returns_404_for_wrong_project()
+def test_update_activity_returns_422_for_invalid_data()
 def test_update_activity_recalculates_indicators()
+def test_delete_activity_returns_204()
+def test_delete_activity_returns_404()
 ```
 
-### Cobertura mínima: 80% sobre `app/services/`
+### Cobertura mínima: 85% sobre todo `app/`
+
+Configuración en `backend/pytest.ini`:
+
+```ini
+[pytest]
+testpaths = tests
+addopts =
+    --cov=app
+    --cov-report=term-missing
+    --cov-fail-under=85
+```
+
+Comando manual equivalente:
 
 ```bash
-pytest --cov=app --cov-report=term-missing --cov-fail-under=80
+pytest --cov=app --cov-report=term-missing --cov-fail-under=85
 ```
 
 ---
@@ -528,44 +570,54 @@ pytest --cov=app --cov-report=term-missing --cov-fail-under=80
 ## Frontend
 
 ### Identidad visual
-- **Logo:** erizo SVG en la barra de navegación superior (archivo `public/hedgehog.svg`)
+- **Logo:** SVG estilizado en la barra de navegación superior (archivo `public/logo.svg`)
 - **Nombre de la app:** PulsePM
 - **Sin ningún contenido, logo, texto ni referencia a Angular**
-- Paleta: colores propios definidos en `tailwind.config.js`, no los defaults genéricos
+- Paleta: utilities Tailwind cargadas vía CDN (`cdn.tailwindcss.com`), familia `slate`, `blue`, `emerald`, `red`, `amber`
+- Tipografía: **Inter** (Google Fonts)
 
 ### Páginas y navegación
 
 **`ProjectListPage`** — ruta `/`
-- Header con logo erizo + nombre "PulsePM"
-- Lista de proyectos como cards
+- Header oscuro con logo + nombre "PulsePM" + nav "Proyectos"
+- Lista de proyectos como cards con ícono de carpeta
 - Botón "Nuevo proyecto" → abre modal con formulario
-- Cada card tiene botón "Ver detalle" y botón "Eliminar" con confirmación
+- Cada card tiene botón "Ver detalle" y botón "Eliminar" → `ConfirmModal` estilizado
 - Estado vacío con mensaje cuando no hay proyectos
 
 **`ProjectDetailPage`** — ruta `/projects/:id`
-- Header con logo erizo + nombre "PulsePM"
+- Header oscuro con logo + nombre "PulsePM"
 - **Botón "← Volver a proyectos"** visible en la parte superior, que navega a `/`
 - Nombre del proyecto editable inline
-- `ActivityTable` con columnas: Nombre, BAC, %Plan, %Real, AC, PV, EV, CV, SV, CPI, SPI
-- Fila de totales al pie de la tabla con indicadores consolidados
+- `ActivityTable` como **lista de cards** con barra de estado coloreada, filtros por tab (Todas / Pendientes / En progreso / Completadas / En riesgo) y chevron expand/collapse con métricas EVM detalladas
 - `ProjectSummary` con tarjetas de CPI y SPI + `StatusBadge` de color
-- `EVMChart` — gráfico de barras agrupado por actividad (PV, EV, AC)
-- Botón "Agregar actividad" → fila editable inline al final de la tabla
-- Cada fila tiene botón editar y botón eliminar
+- `EVMChart` — gráfico de barras agrupado por actividad (PV, EV, AC) con leyenda inline en el header
+- `EVMGlossary` — sección colapsable con definiciones de los 10 indicadores EVM
+- Botón "Agregar actividad" → form inline tipo card al inicio de la lista
+- Cada actividad tiene botón editar y botón eliminar (eliminar abre `ConfirmModal`)
 
 ### `StatusBadge`
+Píldora con dot indicador de color a la izquierda del texto:
+
 ```
-CPI/SPI > 1   → badge verde   "✓ Eficiente" / "✓ Adelantado"
-CPI/SPI == 1  → badge azul    "= En objetivo"
-CPI/SPI < 1   → badge rojo    "✗ Ineficiente" / "✗ Atrasado"
-null          → badge gris    "— Sin datos"
+CPI/SPI > 1   → badge verde (emerald)   "Eficiente" / "Adelantado"
+CPI/SPI == 1  → badge azul              "En objetivo"
+CPI/SPI < 1   → badge rojo              "Ineficiente" / "Atrasado"
+null          → badge gris (slate)      "Sin datos"
 ```
 
 ### `EVMChart`
-- Recharts `BarChart` agrupado
-- Series: PV (azul #3B82F6), EV (verde #22C55E), AC (naranja #F97316)
-- Eje X: nombre de actividad truncado a 15 caracteres si es largo
-- Eje Y: formato numérico con separador de miles
+- Recharts `BarChart` agrupado dentro de card con header propio
+- Series: PV (azul `#3B82F6`), EV (verde `#10B981`), AC (ámbar `#F59E0B`)
+- Eje X: nombre de actividad truncado a 12 caracteres si es largo
+- Eje Y: formato numérico con separador de miles (`Intl.NumberFormat('es-CO')`)
+- Tooltip personalizado y leyenda inline en el header
+- Empty state cuando no hay actividades (no se renderiza el chart)
+
+### `ConfirmModal`
+- Modal de confirmación reutilizable para acciones destructivas
+- Mismo lenguaje visual que `NewProjectModal`: backdrop con blur, card centrada, botones cancelar/confirmar
+- Usado para eliminar proyectos y eliminar actividades
 
 ### `api.js`
 ```javascript
@@ -755,45 +807,46 @@ git checkout develop
 git pull origin develop
 ```
 
-### Convención de commits — EN ESPAÑOL
+### Convención de commits — INGLÉS IMPERATIVO
 
-Formato: `tipo(scope): descripción imperativa en español`
-
-| Tipo | Cuándo |
-|------|--------|
-| `feat` | Nueva funcionalidad |
-| `fix` | Corrección de error |
-| `test` | Agregar o modificar tests |
-| `refactor` | Mejora sin cambio de comportamiento |
-| `docs` | Documentación |
-| `chore` | Configuración, dependencias |
-| `style` | Formato, linter |
+Formato: `Descripción imperativa corta en inglés`. Sin prefijo de tipo obligatorio.
+Mensajes vagos como `fix`, `wip`, `update`, `cambios` **no son aceptables**.
 
 ### Ejemplos de commits válidos para este proyecto
 ```
-feat(modelos): Agregar modelo Project con SQLAlchemy
-feat(modelos): Agregar modelo Activity con relación a Project
-feat(calculadora-evm): Agregar funciones PV, EV, CV y SV
-feat(calculadora-evm): Agregar cálculo de CPI y SPI con manejo de división por cero
-feat(calculadora-evm): Agregar EAC, VAC e indicadores consolidados por proyecto
-fix(calculadora-evm): Corregir caso borde cuando AC es cero en CPI
-feat(interprete-evm): Agregar interpretación textual de CPI y SPI
-feat(api-proyectos): Agregar endpoint GET /projects
-feat(api-proyectos): Agregar endpoint POST /projects con validación
-feat(api-proyectos): Agregar endpoint GET /projects/<id> con indicadores EVM
-feat(api-proyectos): Agregar endpoints PUT y DELETE /projects/<id>
-feat(api-actividades): Agregar endpoints CRUD para actividades
-feat(swagger): Documentar todos los endpoints con Flasgger
-test(calculadora-evm): Agregar pruebas unitarias para happy path
-test(calculadora-evm): Agregar pruebas de casos borde AC cero y lista vacía
-test(api): Agregar pruebas de integración por endpoint
-feat(frontend): Inicializar proyecto React con Vite y Tailwind
-feat(lista-proyectos): Agregar página principal con cards de proyectos
-feat(detalle-proyecto): Agregar tabla de actividades con indicadores EVM
-feat(detalle-proyecto): Agregar botón de retorno a lista de proyectos
-feat(grafico-evm): Agregar gráfico de barras PV, EV, AC con Recharts
-chore(docker): Agregar Docker Compose con PostgreSQL, backend y frontend
-docs(readme): Agregar instrucciones de instalación y ejecución
+Initialize repository with README and project specification
+Add Project SQLAlchemy model
+Add Activity SQLAlchemy model with relation to Project
+Add PV, EV, CV and SV calculation functions
+Add CPI and SPI calculation with zero-division handling
+Add EAC, VAC and consolidated project indicators
+Fix CPI edge case when AC is zero
+Add textual interpretation of CPI and SPI
+Add GET /projects endpoint with project listing
+Add POST /projects endpoint with validation schema
+Add GET /projects/<id> endpoint with EVM indicators
+Add PUT and DELETE /projects/<id> endpoints
+Add POST /projects/<id>/activities endpoint with ActivitySchema
+Add PUT and DELETE /projects/<id>/activities/<act_id> endpoints
+Document all endpoints with Flasgger
+Add unit tests for EVM calculator happy path
+Add edge case tests for EVM calculator AC zero and empty list
+Add unit tests for EVM interpreter
+Add integration tests for projects API with database isolation
+Add integration tests for activities API
+Initialize React frontend with Vite Tailwind and Router
+Add project list page with cards loading and empty state
+Add new project modal with form
+Add delete button with confirmation
+Add ProjectDetailPage shell with back button and inline name editing
+Add StatusBadge and ProjectSummary indicator cards
+Add ActivityTable with read-only rows and totals
+Add ActivityForm with add edit and delete activity actions
+Add EVMChart with grouped bars for PV EV AC by activity
+Add Docker Compose with PostgreSQL backend and frontend services
+Replace deprecated Project.query.get with Session.get
+Abstract validation and not found error responses with helpers
+Remove deprecated version key from docker-compose
 ```
 
 ### Commits INVÁLIDOS — nunca usar
