@@ -51,3 +51,6 @@ docker-compose.override.yml
 
 # Local test output
 test_output.txt
+
+# Local chat history
+historial_chat.txt
