@@ -64,3 +64,66 @@ def test_delete_project_cascades_activities(client, app, sample_activity):
         after = Activity.query.filter_by(project_id=project["id"]).count()
     assert after == 0
     _db.session.remove()
+
+
+def test_list_projects_returns_empty_list(client):
+    response = client.get("/api/v1/projects")
+    assert response.status_code == 200
+    assert response.get_json() == []
+
+
+def test_list_projects_returns_created_projects(client):
+    client.post("/api/v1/projects", json={"name": "P1"})
+    client.post("/api/v1/projects", json={"name": "P2"})
+    response = client.get("/api/v1/projects")
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 2
+
+
+def test_create_project_returns_422_for_empty_name(client):
+    response = client.post("/api/v1/projects", json={"name": ""})
+    assert response.status_code == 422
+    data = response.get_json()
+    assert data["error"] == "Validation error"
+    assert "name" in data["details"]
+
+
+def test_update_project_returns_200(client):
+    project = client.post("/api/v1/projects", json={"name": "Original"}).get_json()
+    response = client.put(
+        f"/api/v1/projects/{project['id']}",
+        json={"name": "Updated", "description": "Nueva descripción"},
+    )
+    assert response.status_code == 200
+    data = response.get_json()
+    assert data["name"] == "Updated"
+    assert data["description"] == "Nueva descripción"
+
+
+def test_update_project_returns_404(client):
+    response = client.put(
+        "/api/v1/projects/99999",
+        json={"name": "Updated"},
+    )
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["code"] == 404
+
+
+def test_update_project_returns_422_for_empty_name(client):
+    project = client.post("/api/v1/projects", json={"name": "Original"}).get_json()
+    response = client.put(
+        f"/api/v1/projects/{project['id']}",
+        json={"name": ""},
+    )
+    assert response.status_code == 422
+    data = response.get_json()
+    assert "name" in data["details"]
+
+
+def test_delete_nonexistent_project_returns_404(client):
+    response = client.delete("/api/v1/projects/99999")
+    assert response.status_code == 404
+    data = response.get_json()
+    assert data["code"] == 404
