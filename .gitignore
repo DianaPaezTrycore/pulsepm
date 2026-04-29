@@ -1,0 +1,59 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+env/
+.venv/
+ENV/
+
+# Node
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Claude Code
+.claude/
+
+# Docker compose local override
+docker-compose.override.yml
+
+# Local test output
+test_output.txt
+
+# Local chat history
+historial_chat.txt
+
+# AI process notes (local only)
+AI_PROCESS.md
